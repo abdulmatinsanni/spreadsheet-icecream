@@ -1,0 +1,46 @@
+version: "3.7"
+services:
+    spreadsheet-icecream_db:
+        restart: always
+        image: postgres:12-alpine
+        environment:
+            POSTGRES_DB: spreadsheet_icecream
+            POSTGRES_USER: postgres_user
+            POSTGRES_PASSWORD: postgres_pass
+        ports:
+            - 5439:5432
+        networks:
+            - spreadsheet-icecream_vpc
+
+    spreadsheet-icecream_app:
+        build:
+            context: .
+        restart: unless-stopped
+        environment:
+            APP_NAME: Spreadsheet Icecream
+            APP_ENV: local
+            APP_KEY: base64:9QZceksOBfMiZrVRjvC/k7y0jLFPmZUOM57TcdGvHUA=
+            APP_DEBUG: "true"
+            APP_URL: http://localhost:8002
+            LOG_CHANNEL: stack
+            LOG_LEVEL: debug
+            DB_CONNECTION: pgsql
+            DB_HOST: spreadsheet-icecream_db
+            DB_PORT: 5432
+            DB_DATABASE: spreadsheet_icecream
+            DB_USERNAME: postgres_user
+            DB_PASSWORD: postgres_pass
+            QUEUE_CONNECTION: database
+        volumes:
+            - ./:/var/www/app
+            - /var/www/app/vendor
+        ports:
+            - "8002:80"
+        depends_on:
+            - spreadsheet-icecream_db
+        networks:
+            - spreadsheet-icecream_vpc
+
+networks:
+    spreadsheet-icecream_vpc:
+        external: true
